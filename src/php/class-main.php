@@ -7,12 +7,21 @@
 
 namespace Sgdg;
 
+use Sgdg\Admin\Settings_Pages;
+use Sgdg\Admin\TinyMCE_Plugin;
+use Sgdg\Frontend\Block;
+use Sgdg\Frontend\Gallery;
+use Sgdg\Frontend\Page;
+use Sgdg\Frontend\Shortcode;
+use Sgdg\Frontend\Video_Proxy;
+
 /**
  * Main plugin class.
  *
  * @phan-constructor-used-for-side-effects
  */
-class Main {
+final class Main {
+
 	/**
 	 * Initializes the plugin
 	 */
@@ -20,12 +29,13 @@ class Main {
 		register_activation_hook( __FILE__, array( self::class, 'activate' ) );
 		add_action( 'plugins_loaded', array( '\\Sgdg\\Options', 'init' ) );
 		add_action( 'admin_notices', array( self::class, 'activation_notice' ) );
-		new \Sgdg\Frontend\Shortcode();
-		new \Sgdg\Frontend\Block();
-		new \Sgdg\Frontend\Page();
-		new \Sgdg\Frontend\Gallery();
-		new \Sgdg\Admin\Settings_Pages();
-		new \Sgdg\Admin\TinyMCE_Plugin();
+		new Shortcode();
+		new Block();
+		new Page();
+		new Gallery();
+		new Video_Proxy();
+		new Settings_Pages();
+		new TinyMCE_Plugin();
 	}
 
 	/**
@@ -38,12 +48,16 @@ class Main {
 	public static function activate() {
 		if ( ! isset( $GLOBALS['wp_version'] ) || version_compare( $GLOBALS['wp_version'], '4.9.6', '<' ) ) {
 			deactivate_plugins( plugin_basename( __FILE__ ) );
-			wp_die( esc_html__( 'Google Drive gallery requires at least WordPress 4.9.6', 'skaut-google-drive-gallery' ) );
+			wp_die(
+				esc_html__( 'Google Drive gallery requires at least WordPress 4.9.6', 'skaut-google-drive-gallery' )
+			);
 		}
+
 		if ( version_compare( phpversion(), '5.6', '<' ) ) {
 			deactivate_plugins( plugin_basename( __FILE__ ) );
 			wp_die( esc_html__( 'Google Drive gallery requires at least PHP 5.6', 'skaut-google-drive-gallery' ) );
 		}
+
 		set_transient( 'sgdg_activation_notice', true, 30 );
 	}
 
@@ -55,13 +69,27 @@ class Main {
 	 * @return void
 	 */
 	public static function activation_notice() {
-		if ( false !== get_transient( 'sgdg_activation_notice' ) ) {
-			echo( '<div class="notice notice-info is-dismissible"><p>' );
-			$help_link = 'https://napoveda.skaut.cz/dobryweb/' . substr( get_locale(), 0, 2 ) . '-skaut-google-drive-gallery';
-			/* translators: 1: Start of a link to the settings 2: End of the link to the settings 3: Start of a help link 4: End of the help link */
-			printf( esc_html__( 'Google Drive gallery needs to be %1$sconfigured%2$s before it can be used. See the %3$sdocumentation%4$s for more information.', 'skaut-google-drive-gallery' ), '<a href="' . esc_url( admin_url( 'admin.php?page=sgdg_basic' ) ) . '">', '</a>', '<a href="' . esc_url( $help_link ) . '" target="_blank">', '</a>' );
-			echo( '</p></div>' );
-			delete_transient( 'sgdg_activation_notice' );
+		if ( false === get_transient( 'sgdg_activation_notice' ) ) {
+			return;
 		}
+
+		echo '<div class="notice notice-info is-dismissible"><p>';
+		$help_link = 'https://napoveda.skaut.cz/dobryweb/' .
+			substr( get_locale(), 0, 2 ) .
+			'-skaut-google-drive-gallery';
+		printf(
+			/* translators: 1: Start of a link to the settings 2: End of the link to the settings 3: Start of a help link 4: End of the help link */
+			esc_html__(
+				// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
+				'Google Drive gallery needs to be %1$sconfigured%2$s before it can be used. See the %3$sdocumentation%4$s for more information.',
+				'skaut-google-drive-gallery'
+			),
+			'<a href="' . esc_url( admin_url( 'admin.php?page=sgdg_basic' ) ) . '">',
+			'</a>',
+			'<a href="' . esc_url( $help_link ) . '" target="_blank">',
+			'</a>'
+		);
+		echo '</p></div>';
+		delete_transient( 'sgdg_activation_notice' );
 	}
 }

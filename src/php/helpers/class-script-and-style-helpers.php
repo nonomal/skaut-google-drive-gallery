@@ -10,7 +10,15 @@ namespace Sgdg;
 /**
  * Contains helper functions for registering and enqueueing scripts and styles.
  */
-class Script_And_Style_Helpers {
+final class Script_And_Style_Helpers {
+
+	/**
+	 * A list of already added inline configurations
+	 *
+	 * @var array<array{0: string, 1: string}> The acitve configurations, recorded as a script handle and the JavaScript variable name.
+	 */
+	private static $inline_configs = array();
+
 	/**
 	 * Registers a script file
 	 *
@@ -23,8 +31,8 @@ class Script_And_Style_Helpers {
 	 * @return void
 	 */
 	public static function register_script( $handle, $src, $deps = array() ) {
-		$path = plugin_dir_path( dirname( __FILE__ ) ) . $src;
-		$url  = plugin_dir_url( dirname( __FILE__ ) ) . $src;
+		$path = plugin_dir_path( __DIR__ ) . $src;
+		$url  = plugin_dir_url( __DIR__ ) . $src;
 		wp_register_script( $handle, $url, $deps, file_exists( $path ) ? strval( filemtime( $path ) ) : false, true );
 	}
 
@@ -40,8 +48,8 @@ class Script_And_Style_Helpers {
 	 * @return void
 	 */
 	public static function register_style( $handle, $src, $deps = array() ) {
-		$path = plugin_dir_path( dirname( __FILE__ ) ) . $src;
-		$url  = plugin_dir_url( dirname( __FILE__ ) ) . $src;
+		$path = plugin_dir_path( __DIR__ ) . $src;
+		$url  = plugin_dir_url( __DIR__ ) . $src;
 		wp_register_style( $handle, $url, $deps, file_exists( $path ) ? strval( filemtime( $path ) ) : false );
 	}
 
@@ -75,5 +83,23 @@ class Script_And_Style_Helpers {
 	public static function register_and_enqueue_style( $handle, $src, $deps = array() ) {
 		self::register_style( $handle, $src, $deps );
 		wp_enqueue_style( $handle );
+	}
+
+	/**
+	 * Adds a configuration to an already registered/enqueued script.
+	 *
+	 * @param string                                      $handle A unique handle to identify the script with.
+	 * @param string                                      $js_var_name The name of the JavaScript variable that the configuration will be accessible in.
+	 * @param array<string, string|array<string, string>> $data The actual configuration data.
+	 *
+	 * @return void
+	 */
+	public static function add_script_configuration( $handle, $js_var_name, $data ) {
+		if ( in_array( array( $handle, $js_var_name ), self::$inline_configs, true ) ) {
+			return;
+		}
+
+		wp_add_inline_script( $handle, 'const ' . $js_var_name . ' = ' . wp_json_encode( $data ) . ';', 'before' );
+		self::$inline_configs[] = array( $handle, $js_var_name );
 	}
 }
