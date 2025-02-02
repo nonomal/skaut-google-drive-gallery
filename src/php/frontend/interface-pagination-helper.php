@@ -1,6 +1,6 @@
 <?php
 /**
- * Contains the Pagination_Helper_Interface interface.
+ * Contains the Pagination_Helper interface.
  *
  * @package skaut-google-drive-gallery
  */
@@ -10,7 +10,8 @@ namespace Sgdg\Frontend;
 /**
  * Stores pagination info and provides methods to access and use it easily.
  */
-interface Pagination_Helper_Interface {
+interface Pagination_Helper {
+
 	/**
 	 * Returns how many items the next list API call should fetch.
 	 *
@@ -23,12 +24,12 @@ interface Pagination_Helper_Interface {
 	/**
 	 * Iterates through a list, skipping items where appropriate.
 	 *
-	 * @param array<mixed> $list The list to go through.
+	 * @param array<mixed> $arr The list to go through.
 	 * @param callable     $iterator The function to call on each unskipped item.
 	 *
 	 * @return void
 	 */
-	public function iterate( $list, $iterator );
+	public function iterate( $arr, $iterator );
 
 	/**
 	 * Whether the algorithm should continue to fetch new data.

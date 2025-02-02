@@ -8,15 +8,17 @@
  */
 
 /*
-Plugin Name:	Image and video gallery from Google Drive
-Plugin URI:		https://github.com/skaut/skaut-google-drive-gallery/
-Description:	A WordPress gallery using Google Drive as file storage
-Version:		2.12.0
-Author:			Junák - český skaut
-Author URI:		https://github.com/skaut
-License:		MIT
-License URI:	https://github.com/skaut/skaut-google-drive-gallery/blob/master/LICENSE
-Text Domain:	skaut-google-drive-gallery
+Plugin Name:       Image and video gallery from Google Drive
+Plugin URI:        https://github.com/skaut/skaut-google-drive-gallery/
+Description:       A WordPress gallery using Google Drive as file storage
+Version:           2.13.14
+Requires at least: 4.9.6
+Requires PHP:      5.6
+Author:            Junák - český skaut
+Author URI:        https://github.com/skaut
+License:           MIT
+License URI:       https://github.com/skaut/skaut-google-drive-gallery/blob/master/LICENSE
+Text Domain:       skaut-google-drive-gallery
 
 MIT License
 
@@ -73,17 +75,21 @@ require_once __DIR__ . '/helpers/class-get-helpers.php';
 require_once __DIR__ . '/helpers/class-helpers.php';
 require_once __DIR__ . '/helpers/class-script-and-style-helpers.php';
 
-require_once __DIR__ . '/frontend/interface-pagination-helper-interface.php';
+require_once __DIR__ . '/frontend/page/class-directories.php';
+require_once __DIR__ . '/frontend/page/class-images.php';
+require_once __DIR__ . '/frontend/page/class-videos.php';
+
+require_once __DIR__ . '/frontend/interface-pagination-helper.php';
 require_once __DIR__ . '/frontend/class-api-fields.php';
 require_once __DIR__ . '/frontend/class-block.php';
 require_once __DIR__ . '/frontend/class-gallery.php';
 require_once __DIR__ . '/frontend/class-gallery-context.php';
-require_once __DIR__ . '/frontend/class-infinite-pagination-helper.php';
-require_once __DIR__ . '/frontend/class-pagination-helper.php';
+require_once __DIR__ . '/frontend/class-paging-pagination-helper.php';
 require_once __DIR__ . '/frontend/class-options-proxy.php';
 require_once __DIR__ . '/frontend/class-page.php';
 require_once __DIR__ . '/frontend/class-shortcode.php';
 require_once __DIR__ . '/frontend/class-single-page-pagination-helper.php';
+require_once __DIR__ . '/frontend/class-video-proxy.php';
 
 require_once __DIR__ . '/admin/class-oauth-helpers.php';
 require_once __DIR__ . '/admin/class-settings-pages.php';

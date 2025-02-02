@@ -7,6 +7,8 @@
 
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals
 
+require_once dirname( __DIR__ ) . '/vendor/yoast/phpunit-polyfills/phpunitpolyfills-autoload.php';
+
 $_tests_dir = getenv( 'WP_TESTS_DIR' );
 
 if ( '' === $_tests_dir || false === $_tests_dir ) {
@@ -27,8 +29,8 @@ require_once $_tests_dir . '/includes/functions.php';
  *
  * @return void
  */
-$_manually_load_plugin = static function() {
-	require dirname( dirname( __FILE__ ) ) . '/dist/skaut-google-drive-gallery.php';
+$_manually_load_plugin = static function () {
+	require dirname( __DIR__ ) . '/dist/skaut-google-drive-gallery.php';
 };
 tests_add_filter( 'muplugins_loaded', $_manually_load_plugin );
 
