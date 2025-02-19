@@ -4,7 +4,7 @@ on:
     branches: "*"
   pull_request:
 env:
-  php-version: 8.1
+  php-version: 8.3
   cache-version: 1
 jobs:
   platform-check:
@@ -12,10 +12,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: "Setup PHP"
-        uses: shivammathur/setup-php@2.18.1
+        uses: shivammathur/setup-php@2.32.0
         with:
           php-version: 5.6
           coverage: none
@@ -29,42 +29,35 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: "Setup PHP"
-        uses: shivammathur/setup-php@2.18.1
+        uses: shivammathur/setup-php@2.32.0
         with:
           php-version: ${{ env.php-version }}
           coverage: none
 
-      - name: "Setup Node"
-        uses: actions/setup-node@v3.1.1
-        with:
-          node-version: '14'
-
       - name: "Cache Composer dependencies"
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: "~/.composer/cache"
           key: composer-dependencies-${{ runner.os }}-${{ env.cache-version }}-${{ hashFiles('composer.json') }}
           restore-keys: |
             composer-dependencies-${{ runner.os }}-${{ env.cache-version }}-${{ hashFiles('composer.json') }}
             composer-dependencies-${{ runner.os }}-${{ env.cache-version }}-
-            composer-dependencies-${{ runner.os }}-
 
       - name: "Install Composer dependencies"
         run: |
-          composer -n install
+          composer install -n --prefer-dist
 
       - name: "Cache NPM dependencies"
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: "~/.npm"
           key: npm-dependencies-${{ runner.os }}-${{ env.cache-version }}-${{ hashFiles('package.json') }}
           restore-keys: |
             npm-dependencies-${{ runner.os }}-${{ env.cache-version }}-${{ hashFiles('package.json') }}
             npm-dependencies-${{ runner.os }}-${{ env.cache-version }}-
-            npm-dependencies-${{ runner.os }}-
 
       - name: "Install NPM dependencies"
         run: |
@@ -75,7 +68,7 @@ jobs:
           npm run build
 
       - name: "Upload artifact"
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: "build-artifact"
           path: dist
@@ -88,65 +81,58 @@ jobs:
       php-extensions: ast
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: "Setup PHP extension caching"
         id: extcache
-        uses: shivammathur/cache-extensions@1.7.1
+        uses: shivammathur/cache-extensions@1.12.0
         with:
           php-version: ${{ env.php-version }}
           extensions: ${{ env.php-extensions }}
           key: php-extensions-${{ runner.os }}-${{ env.cache-version }}
 
       - name: "Cache extensions"
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ steps.extcache.outputs.dir }}
           key: ${{ steps.extcache.outputs.key }}
           restore-keys: ${{ steps.extcache.outputs.key }}
 
       - name: "Setup PHP"
-        uses: shivammathur/setup-php@2.18.1
+        uses: shivammathur/setup-php@2.32.0
         with:
           php-version: ${{ env.php-version }}
           extensions: ${{ env.php-extensions }}
           coverage: none
 
-      - name: "Setup Node"
-        uses: actions/setup-node@v3.1.1
-        with:
-          node-version: '14'
-
       - name: "Cache Composer dependencies"
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: "~/.composer/cache"
           key: composer-dependencies-${{ runner.os }}-${{ env.cache-version }}-${{ hashFiles('composer.json') }}
           restore-keys: |
             composer-dependencies-${{ runner.os }}-${{ env.cache-version }}-${{ hashFiles('composer.json') }}
             composer-dependencies-${{ runner.os }}-${{ env.cache-version }}-
-            composer-dependencies-${{ runner.os }}-
 
       - name: "Install Composer dependencies"
         run: |
-          composer -n install
+          composer install -n --prefer-dist
 
       - name: "Cache NPM dependencies"
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: "~/.npm"
           key: npm-dependencies-${{ runner.os }}-${{ env.cache-version }}-${{ hashFiles('package.json') }}
           restore-keys: |
             npm-dependencies-${{ runner.os }}-${{ env.cache-version }}-${{ hashFiles('package.json') }}
             npm-dependencies-${{ runner.os }}-${{ env.cache-version }}-
-            npm-dependencies-${{ runner.os }}-
 
       - name: "Install NPM dependencies"
         run: |
           npm ci
 
       - name: "Download build artifact"
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: "build-artifact"
           path: dist
@@ -156,9 +142,12 @@ jobs:
           npm run lint
 
   unit:
-    name: "Unit test"
+    name: "Test"
     runs-on: ubuntu-latest
     needs: build
+    strategy:
+      matrix:
+        versions: [{php: "5.6", wordpress: "4.9"}, {php: "5.6", wordpress: "5.9"}, {php: "5.6", wordpress: "6.2"}, {php: "7.4", wordpress: "latest"}, {php: "8.3", wordpress: "latest"}]
     services:
       mysql:
         image: mysql:5
@@ -168,61 +157,86 @@ jobs:
           MYSQL_ALLOW_EMPTY_PASSWORD: yes
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
+      - name: "Install SVN"
+        uses: awalsh128/cache-apt-pkgs-action@v1.4.3
+        with:
+          packages: subversion
+          version: ${{ env.cache-version }}
 
       - name: "Setup PHP"
-        uses: shivammathur/setup-php@2.18.1
+        uses: shivammathur/setup-php@2.32.0
         with:
-          php-version: ${{ env.php-version }}
+          php-version: ${{ matrix.versions.php }}
           coverage: pcov
 
-      - name: "Setup Node"
-        uses: actions/setup-node@v3.1.1
-        with:
-          node-version: '14'
-
       - name: "Cache Composer dependencies"
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: "~/.composer/cache"
-          key: composer-dependencies-${{ runner.os }}-${{ env.cache-version }}-${{ hashFiles('composer.json') }}
+          key: composer-dependencies-test-${{ runner.os }}-${{ env.cache-version }}-${{ hashFiles('composer.json') }}
           restore-keys: |
-            composer-dependencies-${{ runner.os }}-${{ env.cache-version }}-${{ hashFiles('composer.json') }}
-            composer-dependencies-${{ runner.os }}-${{ env.cache-version }}-
-            composer-dependencies-${{ runner.os }}-
+            composer-dependencies-test-${{ runner.os }}-${{ env.cache-version }}-${{ hashFiles('composer.json') }}
+            composer-dependencies-test-${{ runner.os }}-${{ env.cache-version }}-
+
+      - name: "Move phpunit to non-dev Composer dependencies"
+        run: |
+          composer -n require --no-update yoast/phpunit-polyfills phpunit/phpunit:"^5.7 || ^6.5 || ^7.5 || ^8.5 || ^9.6"
+
+      - name: "Remove all non-dev Composer dependencies"
+        run: |
+          composer remove --dev --no-update $(composer show -s | sed -n '/requires (dev)$/,/^$/p' | grep -v 'requires (dev)' | cut -d ' ' -f1 | tr '\n' ' ')
 
       - name: "Install Composer dependencies"
         run: |
-          composer -n install
+          composer update -n --prefer-dist
 
       - name: "Cache NPM dependencies"
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: "~/.npm"
           key: npm-dependencies-${{ runner.os }}-${{ env.cache-version }}-${{ hashFiles('package.json') }}
           restore-keys: |
             npm-dependencies-${{ runner.os }}-${{ env.cache-version }}-${{ hashFiles('package.json') }}
             npm-dependencies-${{ runner.os }}-${{ env.cache-version }}-
-            npm-dependencies-${{ runner.os }}-
 
       - name: "Install NPM dependencies"
         run: |
           npm ci
 
       - name: "Download build artifact"
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: "build-artifact"
           path: dist
 
       - name: "Prepare WordPress test environment"
         run: |
-          ./bin/install-wp-tests.sh wordpress_test root '' 127.0.0.1 latest
+          ./bin/install-wp-tests.sh wordpress_test root '' 127.0.0.1 ${{ matrix.versions.wordpress }}
 
-      - name: "Run unit tests"
+      - name: "Run tests"
         run: |
-          npm run unit
+          npm run test
 
       - name: "Upload coverage results"
-        run: |
-          bash <(curl -s https://codecov.io/bash) -f clover.xml
+        uses: codecov/codecov-action@v5.3.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+
+  plugin-check:
+    name: "Plugin check"
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: "Download build artifact"
+        uses: actions/download-artifact@v4
+        with:
+          name: "build-artifact"
+          path: skaut-google-drive-gallery
+
+      - name: "Run plugin check"
+        uses: wordpress/plugin-check-action@v1
+        with:
+          build-dir: skaut-google-drive-gallery

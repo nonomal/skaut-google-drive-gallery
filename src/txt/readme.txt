@@ -1,9 +1,9 @@
 === Image and video gallery from Google Drive ===
 Contributors: skaut, marekdedic, kalich5
-Tags: skaut, google drive, google drive gallery, image and video gallery from google drive, team drive, shared drive, image gallery, video gallery, image and video gallery, gallery from google drive, gallery, multisite, shortcode
+Tags: google drive, gallery, google drive gallery, image gallery, video gallery
 Requires at least: 4.9.6
-Tested up to: 5.9
-Stable tag: 2.12.0
+Tested up to: 6.7
+Stable tag: 2.13.14
 Requires PHP: 5.6
 License: MIT
 License URI: https://github.com/skaut/skaut-google-drive-gallery/blob/master/LICENSE
@@ -36,13 +36,14 @@ If you want to see how to install, configure and use the plugin, visit our [docu
 * PHP 5.6 or higher
 
 === GitHub ===
-All the sources for the plugin and the build process are detailed in our [Github repo](https://github.com/skaut/skaut-google-drive-gallery/).
+All the sources for the plugin and the build process are detailed in our [GitHub repo](https://github.com/skaut/skaut-google-drive-gallery/).
 
 == Installation ==
 1. Download and install the plugin from the WordPress plugin directory or from [GitHub](https://github.com/skaut/skaut-google-drive-gallery/releases)
-2. Create a Google app and configure the plugin
-3. Select a root directory for the plugin to use
-4. Add a gallery
+2. Activate the plugin
+3. Create a Google app and configure the plugin
+4. Select a root directory for the plugin to use
+5. Add a gallery
 
 == Frequently Asked Questions ==
 
@@ -63,8 +64,11 @@ If no path is provided, then the root directory itself is used.
 = Why isn't my video shown? =
 The plugin only shows videos that can be played by the browser. Unfortunately, at the moment, different browsers support different video formats. If you want the best support, we recommend using MP4. Detailed information about which formats are supported by each browser can be found on [Wikipedia](https://en.wikipedia.org/wiki/HTML5_video#Browser_support).
 
-= I'm running into issues with Google quotas =
-See the [documentation](https://napoveda.skaut.cz/dobryweb/en-skaut-google-drive-gallery#quota-issues) for what you can do about this.
+= The plugin loses authorization every 7 days =
+Unfortunately, this is a limitation of Google apps in testing mode, see Google's [documentation](https://developers.google.com/identity/protocols/oauth2#expiration). To circumvent this, set your app as either "Internal" or "In Production".
+
+= I'm getting an unknown error =
+Please enable [WordPress debugging](https://wordpress.org/documentation/article/debugging-in-wordpress/) to see more information and open a support ticket if relevant.
 
 == Screenshots ==
 
@@ -81,6 +85,67 @@ See the [documentation](https://napoveda.skaut.cz/dobryweb/en-skaut-google-drive
 6. Advanced options
 
 == Changelog ==
+
+= 2.13.14 =
+* Fixed encoding issues with the plugin icon
+* Updated lightbox to [v3](https://github.com/marekdedic/imagelightbox/releases/tag/3.0.0), fixing a number of issues
+
+= 2.13.13 =
+* Fixed an issue with gallery expiring after an hour. API access needs to be revoked and re-granted to fix the issue.
+
+= 2.13.12 =
+* Fixed an error with incorrect script MIME types, breaking the plugin on sites with strict checking
+
+= 2.13.11 =
+* Fixed an issue with paths containing shortcuts
+* Fixed collisions with other plugins dues to incomplete dependency scoping
+
+= 2.13.10 =
+* Fixed a race condition that sometimes caused path verification checks to not be run
+* Fixed an issue with shortcode localization not being loaded due to unspecified WordPress action order
+
+= 2.13.9 =
+* Fixed ordering images by time
+* Fixed an error when a video doesn't have proper permissions
+* Fixed error messages not being HTML escaped
+
+= 2.13.8 =
+* Fixed support for PHP 5
+
+= 2.13.7 =
+* Fixed big galleries triggering Google API batch request size limit
+* Fixed toggle labels in block settings override
+
+= 2.13.6 =
+* Fixed an error when selecting plugin root directory and navigating to the Drive list
+
+= 2.13.5 =
+* Fixed a PHP 5 compatibility regression
+
+= 2.13.4 =
+* Improved error reporting, including a stack trace when in debug mode
+
+= 2.13.3 =
+* Fixed an issue with galleries sometimes erroneously being reported as empty when images were ordered by time
+
+= 2.13.2 =
+* Fixed an issue with multiple galleries on the same page
+
+= 2.13.1 =
+* Fixed an error on incomplete Google API response
+* Fixed a PHP warning on images without a timestamp
+* Optimized JS code bundling and minimization
+* Fixed using deprecated JavaScript functionality
+* Fixed an issue with WordPress script localization
+
+= 2.13.0 =
+* Fixed galleries with leading or trailing spaces in names
+* Added support for private videos and videos over 25MB
+* Hidden videos with missing thumbnail
+
+= 2.12.1 =
+* Dropped support for Internet Explorer 8
+* Fixed an issue where the plugin would break in rare cases of corrupted video files
 
 = 2.12.0 =
 * Officially added support for PHP 8.1 and WordPress 5.9
@@ -116,7 +181,7 @@ See the [documentation](https://napoveda.skaut.cz/dobryweb/en-skaut-google-drive
 * Better error handling
 
 = 2.10.0 =
-* Substantially reduced occurence of rate limit errors
+* Substantially reduced occurrence of rate limit errors
 * Better error handling
 * Moved the plugin block under the "media" category
 
@@ -207,7 +272,7 @@ See the [documentation](https://napoveda.skaut.cz/dobryweb/en-skaut-google-drive
 
 = 2.3.2 =
 * Image ordering by time now uses EXIF DateTime
-* Partially fixed issue with url being overridden when not terminated by a slash
+* Partially fixed issue with URL being overridden when not terminated by a slash
 * Fixed imprecise directory item counts
 * Fixed issue with other plugins overriding styles
 

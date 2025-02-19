@@ -7,12 +7,15 @@
 
 namespace Sgdg\Admin\Settings_Pages\Advanced;
 
+use Sgdg\Options;
+
 /**
  * Registers and renders the lightbox settings section.
  *
  * @phan-constructor-used-for-side-effects
  */
-class Lightbox {
+final class Lightbox {
+
 	/**
 	 * Register all the hooks for this section.
 	 */
@@ -30,22 +33,27 @@ class Lightbox {
 	 * @return void
 	 */
 	public static function add_section() {
-		add_settings_section( 'sgdg_lightbox', esc_html__( 'Image popup', 'skaut-google-drive-gallery' ), array( self::class, 'html' ), 'sgdg_advanced' );
-		\Sgdg\Options::$preview_size->add_field();
-		\Sgdg\Options::$preview_speed->add_field();
-		\Sgdg\Options::$preview_arrows->add_field();
-		\Sgdg\Options::$preview_close_button->add_field();
-		\Sgdg\Options::$preview_loop->add_field();
-		\Sgdg\Options::$preview_activity_indicator->add_field();
-		\Sgdg\Options::$preview_captions->add_field();
+		add_settings_section(
+			'sgdg_lightbox',
+			esc_html__( 'Image popup', 'skaut-google-drive-gallery' ),
+			array( self::class, 'html' ),
+			'sgdg_advanced'
+		);
+		Options::$preview_size->add_field();
+		Options::$preview_speed->add_field();
+		Options::$preview_arrows->add_field();
+		Options::$preview_close_button->add_field();
+		Options::$preview_loop->add_field();
+		Options::$preview_activity_indicator->add_field();
+		Options::$preview_captions->add_field();
 	}
 
 	/**
 	 * Renders the header for the section.
 	 *
-	 * Currently no-op.
-	 *
 	 * @return void
 	 */
-	public static function html() {}
+	public static function html() {
+		// No header.
+	}
 }

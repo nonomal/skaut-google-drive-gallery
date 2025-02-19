@@ -1,61 +1,70 @@
-/* exported SgdgEditorComponent */
+import * as blockEditor from '@wordpress/block-editor';
+import type { BlockEditProps } from '@wordpress/blocks';
+import * as editor from '@wordpress/editor';
+import { Component, createElement, Fragment } from '@wordpress/element';
+import $ from 'jquery';
 
-type SgdgEditorComponentProps = import('wordpress__blocks').BlockEditProps< Attributes >;
+import { isError } from '../../isError';
+import type { Attributes } from '../interfaces/Attributes';
+import { SgdgSettingsOverrideComponent } from './SgdgSettingsOverrideComponent';
 
 interface SgdgEditorComponentState {
-	error?: string;
-	list?: Array< string >;
+	error: string | undefined;
+	list: Array<string> | undefined;
 }
 
-class SgdgEditorComponent extends wp.element.Component<
-	SgdgEditorComponentProps,
+export class SgdgEditorComponent extends Component<
+	BlockEditProps<Attributes>,
 	SgdgEditorComponentState
 > {
-	public constructor( props: SgdgEditorComponentProps ) {
-		super( props );
+	public constructor(props: BlockEditProps<Attributes>) {
+		super(props);
 		this.state = { error: undefined, list: undefined };
 	}
 
-	public componentDidMount(): void {
+	public override componentDidMount(): void {
 		this.ajax();
 	}
 
-	public render(): React.ReactNode {
-		const el = wp.element.createElement;
-		if ( this.state.error !== undefined ) {
-			return el(
+	public override render(): React.ReactNode {
+		const { error, list } = this.state;
+		const InspectorControls =
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, deprecation/deprecation -- In older versions of Gutenberg, InspectorControls was on editor
+			blockEditor.InspectorControls ?? editor.InspectorControls;
+		if (error !== undefined) {
+			return createElement(
 				'div',
 				{ class: 'notice notice-error' },
-				el( 'p', null, this.state.error )
+				createElement('p', null, error)
 			);
 		}
 		const children = [];
-		const path = this.getAttribute( 'path' ) as Array< string >;
-		const pathElements: Array< React.ReactNode > = [
-			el(
+		const path = this.getAttribute('path') as Array<string>;
+		const pathElements: Array<React.ReactNode> = [
+			createElement(
 				'a',
 				{
-					onClick: ( e: Event ) => {
-						this.pathClick( e );
+					onClick: (e: Event) => {
+						this.pathClick(e);
 					},
 				},
 				sgdgBlockLocalize.root_name
 			),
 		];
-		if ( this.state.list ) {
-			if ( 0 < path.length ) {
+		if (list) {
+			if (0 < path.length) {
 				children.push(
-					el(
+					createElement(
 						'tr',
 						null,
-						el(
+						createElement(
 							'td',
 							{ class: 'row-title' },
-							el(
+							createElement(
 								'label',
 								{
-									onClick: ( e: Event ) => {
-										this.labelClick( e );
+									onClick: (e: Event) => {
+										this.labelClick(e);
 									},
 								},
 								'..'
@@ -64,41 +73,41 @@ class SgdgEditorComponent extends wp.element.Component<
 					)
 				);
 			}
-			for ( let i = 0; i < this.state.list.length; i++ ) {
+			for (let i = 0; i < list.length; i++) {
 				const lineClass =
-					( 0 === path.length && 1 === i % 2 ) ||
-					( 0 < path.length && 0 === i % 2 )
+					(0 === path.length && 1 === i % 2) ||
+					(0 < path.length && 0 === i % 2)
 						? 'alternate'
 						: '';
 				children.push(
-					el(
+					createElement(
 						'tr',
 						{ class: lineClass },
-						el(
+						createElement(
 							'td',
 							{ class: 'row-title' },
-							el(
+							createElement(
 								'label',
 								{
-									onClick: ( e: Event ) => {
-										this.labelClick( e );
+									onClick: (e: Event) => {
+										this.labelClick(e);
 									},
 								},
-								this.state.list[ i ]
+								list[i]
 							)
 						)
 					)
 				);
 			}
-			for ( const segment of path ) {
-				pathElements.push( ' > ' );
+			for (const segment of path) {
+				pathElements.push(' > ');
 				pathElements.push(
-					el(
+					createElement(
 						'a',
 						{
 							'data-id': segment,
-							onClick: ( e: Event ) => {
-								this.pathClick( e );
+							onClick: (e: Event) => {
+								this.pathClick(e);
 							},
 						},
 						segment
@@ -106,57 +115,59 @@ class SgdgEditorComponent extends wp.element.Component<
 				);
 			}
 		}
-		return el( wp.element.Fragment, null, [
-			el(
-				wp.editor.InspectorControls,
+		return createElement(Fragment, null, [
+			createElement(
+				InspectorControls,
 				null,
-				el( SgdgSettingsOverrideComponent, { editor: this } )
+				createElement(SgdgSettingsOverrideComponent, { editor: this })
 			),
-			el( 'table', { class: 'widefat' }, [
-				el(
+			createElement('table', { class: 'widefat' }, [
+				createElement(
 					'thead',
 					null,
-					el(
+					createElement(
 						'tr',
 						null,
-						el(
+						createElement(
 							'th',
 							{ class: 'sgdg-block-editor-path' },
 							pathElements
 						)
 					)
 				),
-				el( 'tbody', null, children ),
-				el(
+				createElement('tbody', null, children),
+				createElement(
 					'tfoot',
 					null,
-					el(
+					createElement(
 						'tr',
 						null,
-						el(
+						createElement(
 							'th',
 							{ class: 'sgdg-block-editor-path' },
 							pathElements
 						)
 					)
 				),
-			] ),
-		] );
+			]),
+		]);
 	}
 
 	public getAttribute(
 		name: string
-	): Array< string > | number | string | undefined {
-		return this.props.attributes[ name ];
+	): Array<string> | number | string | undefined {
+		const { attributes } = this.props;
+		return attributes[name];
 	}
 
 	public setAttribute(
 		name: string,
-		value: Array< string > | number | string | undefined
+		value: Array<string> | number | string | undefined
 	): void {
+		const { setAttributes } = this.props;
 		const attr: Attributes = {};
-		attr[ name ] = value;
-		this.props.setAttributes( attr );
+		attr[name] = value;
+		setAttributes(attr);
 	}
 
 	private ajax(): void {
@@ -165,41 +176,47 @@ class SgdgEditorComponent extends wp.element.Component<
 			{
 				_ajax_nonce: sgdgBlockLocalize.nonce,
 				action: 'list_gallery_dir',
-				path: this.getAttribute( 'path' ),
+				path: this.getAttribute('path'),
 			},
-			( data: ListGalleryDirResponse ) => {
-				if ( isError( data ) ) {
-					this.setState( { error: data.error } );
+			(data: ListGalleryDirResponse) => {
+				if (isError(data)) {
+					this.setState({ error: data.error });
 				} else {
-					this.setState( { list: data.directories } );
+					this.setState({ list: data.directories });
 				}
 			}
 		);
 	}
 
-	private pathClick( e: Event ): void {
-		let path = this.getAttribute( 'path' ) as Array< string >;
+	private pathClick(e: Event): void {
+		if (e.currentTarget === null) {
+			return;
+		}
+		let path = this.getAttribute('path') as Array<string>;
 		path = path.slice(
 			0,
-			path.indexOf( $( e.currentTarget! ).data( 'id' ) as string ) + 1
+			path.indexOf($(e.currentTarget).data('id') as string) + 1
 		);
-		this.setAttribute( 'path', path );
-		this.setState( { error: undefined, list: undefined }, () => {
+		this.setAttribute('path', path);
+		this.setState({ error: undefined, list: undefined }, () => {
 			this.ajax();
-		} );
+		});
 	}
 
-	private labelClick( e: Event ): void {
-		const newDir = $( e.currentTarget! ).text();
-		let path = this.getAttribute( 'path' ) as Array< string >;
-		if ( '..' === newDir ) {
-			path = path.slice( 0, path.length - 1 );
-		} else {
-			path = path.concat( newDir );
+	private labelClick(e: Event): void {
+		if (e.currentTarget === null) {
+			return;
 		}
-		this.setAttribute( 'path', path );
-		this.setState( { error: undefined, list: undefined }, () => {
+		const newDir = $(e.currentTarget).text();
+		let path = this.getAttribute('path') as Array<string>;
+		if ('..' === newDir) {
+			path = path.slice(0, path.length - 1);
+		} else {
+			path = path.concat(newDir);
+		}
+		this.setAttribute('path', path);
+		this.setState({ error: undefined, list: undefined }, () => {
 			this.ajax();
-		} );
+		});
 	}
 }

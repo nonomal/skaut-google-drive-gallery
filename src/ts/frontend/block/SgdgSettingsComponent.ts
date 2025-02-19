@@ -1,66 +1,64 @@
-/* exported SgdgSettingsComponent */
+import { ToggleControl } from '@wordpress/components';
+import { Component, createElement } from '@wordpress/element';
+
+import type { SgdgEditorComponent } from './SgdgEditorComponent';
 
 interface SgdgSettingsComponentProps {
-	editor: SgdgEditorComponent;
-	name: BlockOptions;
+	readonly editor: SgdgEditorComponent;
+	readonly name: BlockOptions;
 }
 
 interface SgdgSettingsComponentState {
 	value: number | string | undefined;
 }
 
-abstract class SgdgSettingsComponent extends wp.element.Component<
+export abstract class SgdgSettingsComponent extends Component<
 	SgdgSettingsComponentProps,
 	SgdgSettingsComponentState
 > {
-	public constructor( props: SgdgSettingsComponentProps ) {
-		super( props );
-		let value = this.props.editor.getAttribute( this.props.name ) as
-			| string
-			| undefined;
-		if ( undefined === value ) {
-			value = sgdgBlockLocalize[ this.props.name ].default;
+	public constructor(props: SgdgSettingsComponentProps) {
+		super(props);
+		const { editor, name } = this.props;
+		let value = editor.getAttribute(name) as string | undefined;
+		if (undefined === value) {
+			value = sgdgBlockLocalize[name].default;
 		}
 		this.state = { value };
 	}
 
-	public render(): React.ReactNode {
-		const el = wp.element.createElement;
-		const disabled =
-			undefined === this.props.editor.getAttribute( this.props.name );
-		return el( 'div', { className: 'sgdg-block-settings-row ' }, [
-			el( wp.components.ToggleControl, {
-				checked: ! disabled,
+	public override render(): React.ReactNode {
+		const { editor, name } = this.props;
+		const disabled = undefined === editor.getAttribute(name);
+		return createElement('div', { className: 'sgdg-block-settings-row ' }, [
+			createElement(ToggleControl, {
+				checked: !disabled,
+				label: createElement(
+					'span',
+					{ className: 'sgdg-block-settings-description' },
+					[sgdgBlockLocalize[name].name, ':']
+				),
 				className: 'sgdg-block-settings-checkbox',
 				onChange: () => {
 					this.toggle();
 				},
-			} ),
-			el( 'span', { className: 'sgdg-block-settings-description' }, [
-				sgdgBlockLocalize[ this.props.name ].name,
-				':',
-			] ),
+			}),
 			this.renderInput(),
-		] );
+		]);
 	}
 
-	protected change( e: React.FormEvent< Element > ): void {
-		const value = this.getValue( e.target );
-		this.setState( { value } );
-		this.props.editor.setAttribute(
-			this.props.name,
-			undefined === value
-				? sgdgBlockLocalize[ this.props.name ].default
-				: value
-		);
+	protected change(e: React.FormEvent): void {
+		const { editor, name } = this.props;
+		const value = this.getValue(e.target);
+		this.setState({ value });
+		editor.setAttribute(name, value ?? sgdgBlockLocalize[name].default);
 	}
 
 	private toggle(): void {
-		this.props.editor.setAttribute(
-			this.props.name,
-			undefined !== this.props.editor.getAttribute( this.props.name )
-				? undefined
-				: this.state.value
+		const { editor, name } = this.props;
+		const { value } = this.state;
+		editor.setAttribute(
+			name,
+			undefined !== editor.getAttribute(name) ? undefined : value
 		);
 	}
 
